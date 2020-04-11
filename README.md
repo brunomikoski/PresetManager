@@ -1,4 +1,4 @@
-# UnityPreset
+# Preset Manager
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://github.com/badawe/PresetManager/blob/develop/LICENSE)
 
 Preset Manager is the missing per folder preset for Unity.
