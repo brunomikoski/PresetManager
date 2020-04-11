@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UnityEditor;
 using UnityEditor.Presets;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace BrunoMikoski.PresetManager
 {
@@ -188,7 +186,6 @@ namespace BrunoMikoski.PresetManager
                 {
                     Debug.Log($"Applying {preset.name} to {assetImporter.assetPath}");
                 }
-                
             }
             else
             {

@@ -9,22 +9,13 @@ using UnityEngine;
 namespace BrunoMikoski.PresetManager
 {
     [CustomEditor(typeof(DefaultAsset), true)]
-    public class PresetManagerFolderCustomEditor : Editor
+    public class FolderCustomEditor : Editor
     {
-
-        [SerializeField] 
         private bool isFolder;
-        [SerializeField] 
         private string relativeFolderPath;
-        [SerializeField]
         private string absoluteFolderPath;
-        
-        [SerializeField]
         private AssetImporter[] assetImportersType;
-        [SerializeField]
         private bool[] assetImportersTypeFoldout;
-
-        [SerializeField] 
         private int selectedIndex  = -1;
 
         private void OnEnable()
@@ -127,9 +118,15 @@ namespace BrunoMikoski.PresetManager
                     EditorGUI.EndDisabledGroup();
                 }
             }
-            
+
             EditorGUI.BeginChangeCheck();
-            selectedIndex = GUILayout.SelectionGrid(selectedIndex, presetsNames, 1, EditorStyles.radioButton);
+
+            using (new GUILayout.HorizontalScope())
+            {
+                GUILayout.Space(14);
+                selectedIndex = GUILayout.SelectionGrid(selectedIndex, presetsNames, 1, EditorStyles.radioButton);
+            }
+
 
             if (EditorGUI.EndChangeCheck())
             {
