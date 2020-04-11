@@ -182,19 +182,13 @@ namespace BrunoMikoski.PresetManager
         {
             if (TryGetAssetPresetFromFolder(relativeFolderPath, assetImporter, out Preset preset))
             {
-                if (preset.ApplyTo(assetImporter))
-                {
-                    Debug.Log($"Applying {preset.name} to {assetImporter.assetPath}");
-                }
+                preset.ApplyTo(assetImporter);
             }
             else
             {
                 if(TryToGetParentPresetSettings(relativeFolderPath, assetImporter, out preset))
                 {
-                    if (preset.ApplyTo(assetImporter))
-                    {
-                        Debug.Log($"Applying {preset.name} to {assetImporter.assetPath}");
-                    }
+                    preset.ApplyTo(assetImporter);
                 }
             }
         }
