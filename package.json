@@ -15,6 +15,5 @@
     "type": "git",
     "url": "https://github.com/badawe/PresetManager.git"
   },
-  "bugs": "https://github.com/badawe/PresetManager/issues",
-  "type": "tool"
+  "bugs": "https://github.com/badawe/PresetManager/issues"
 }
