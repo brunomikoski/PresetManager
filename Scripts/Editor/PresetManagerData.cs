@@ -40,7 +40,7 @@ namespace BrunoMikoski.PresetManager
             return TryGetPresetsForFolder(relativeFolderPath, out Preset[] presets);
         }
 
-        public bool TryGetParentPresetFolder(string relativeFolderPath, AssetImporter assetImporter,
+        public bool TryGetPresetFolderPathFromFolder(string relativeFolderPath, AssetImporter assetImporter,
             out string ownerFolder)
         {
             ownerFolder = string.Empty;

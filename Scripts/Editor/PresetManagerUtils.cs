@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Presets;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace BrunoMikoski.PresetManager
 {
@@ -120,11 +122,9 @@ namespace BrunoMikoski.PresetManager
             if (!isFolderDataDirty)
                 return;
 
-            string json = EditorJsonUtility.ToJson(PresetManagerData, true);
-            EditorPrefs.SetString(PRESET_MANAGER_DATA_STORAGE_KEY, json);
+            EditorPrefs.SetString(PRESET_MANAGER_DATA_STORAGE_KEY, EditorJsonUtility.ToJson(PresetManagerData));
             isFolderDataDirty = false;
         }
-
 
         public static void ProjectPresetsChanged()
         {
@@ -139,7 +139,7 @@ namespace BrunoMikoski.PresetManager
             relativeParentPath = string.Empty;
             while (currentDirectory != null && !string.Equals(currentDirectory.FullName, Directory.GetCurrentDirectory(), StringComparison.Ordinal))
             {
-                if (PresetManagerData.TryGetParentPresetFolder(AbsoluteToRelativePath(currentDirectory.FullName),
+                if (PresetManagerData.TryGetPresetFolderPathFromFolder(AbsoluteToRelativePath(currentDirectory.FullName),
                     assetImporter, out string ownerFolderPath))
                 {
                     relativeParentPath = ownerFolderPath;
@@ -149,6 +149,23 @@ namespace BrunoMikoski.PresetManager
             }
 
             return !string.IsNullOrEmpty(relativeParentPath);
+        }
+        
+        public static bool TryToGetParentPresetSettings(string relativeFolderPath, AssetImporter assetImporter,
+            out Preset preset)
+        {
+            DirectoryInfo currentDirectory = new DirectoryInfo(RelativeToAbsolutePath(relativeFolderPath)).Parent;
+
+            preset = null;
+            while (currentDirectory != null && !string.Equals(currentDirectory.FullName, Directory.GetCurrentDirectory(), StringComparison.Ordinal))
+            {
+                if (PresetManagerData.TryGetAssetPresetFromFolder(AbsoluteToRelativePath(currentDirectory.FullName),
+                    assetImporter, out preset))
+                    break;
+                currentDirectory = currentDirectory.Parent;
+            }
+
+            return preset != null;
         }
         
         
@@ -161,6 +178,64 @@ namespace BrunoMikoski.PresetManager
         public static string RelativeToAbsolutePath(string relativeFilePath)
         {
             return (Application.dataPath.Replace("/Assets", "") + "/" + relativeFilePath).Replace("/", "\\");
+        }
+
+        public static void ApplySettingsToAsset(string relativeFolderPath, AssetImporter assetImporter)
+        {
+            if (TryGetAssetPresetFromFolder(relativeFolderPath, assetImporter, out Preset preset))
+            {
+                if (preset.ApplyTo(assetImporter))
+                {
+                    Debug.Log($"Applying {preset.name} to {assetImporter.assetPath}");
+                }
+                
+            }
+            else
+            {
+                if(TryToGetParentPresetSettings(relativeFolderPath, assetImporter, out preset))
+                {
+                    if (preset.ApplyTo(assetImporter))
+                    {
+                        Debug.Log($"Applying {preset.name} to {assetImporter.assetPath}");
+                    }
+                }
+            }
+        }
+        
+        public static void ApplyPresetsToFolder(string relativeFolderPath)
+        {
+            projectPresets = null;
+            string[] assetPaths = GetAllAssetsAtDirectory(relativeFolderPath);
+            for (int i = 0; i < assetPaths.Length; i++)
+            {
+                AssetImporter assetImporter = AssetImporter.GetAtPath(assetPaths[i]);
+                ApplySettingsToAsset(relativeFolderPath, assetImporter);
+            }
+
+            string[] subFolder = AssetDatabase.GetSubFolders(relativeFolderPath);
+            for (var i = 0; i < subFolder.Length; i++)
+            {
+                string subFolderPath = subFolder[i];
+                ApplyPresetsToFolder(subFolderPath);
+            }
+        }
+
+
+        public static string[] GetAllAssetsAtDirectory(string relativeDirectoryPath)
+        {
+            string[] fileEntries = Directory.GetFiles(RelativeToAbsolutePath(relativeDirectoryPath));
+            List<string> resuts = new List<string>();
+
+            for (var i = 0; i < fileEntries.Length; i++)
+            {
+                string fileEntry = fileEntries[i];
+                if (fileEntry.EndsWith(".meta"))
+                    continue;
+
+                resuts.Add(AbsoluteToRelativePath(fileEntry));
+            }
+
+            return resuts.ToArray();
         }
     }
 }

@@ -89,7 +89,7 @@ namespace BrunoMikoski.PresetManager
             EditorGUI.BeginDisabledGroup(!hasAnyPresetForFolder);
             if (GUILayout.Button("Apply to all", EditorStyles.toolbarButton))
             {
-                
+                PresetManagerUtils.ApplyPresetsToFolder(relativeFolderPath);
             }
             
             if (GUILayout.Button("Delete Folder Settings", EditorStyles.toolbarButton))
@@ -165,6 +165,8 @@ namespace BrunoMikoski.PresetManager
             string[] files = Directory.GetFiles(absoluteFolderPath);
 
             HashSet<AssetImporter> assetImporters = new HashSet<AssetImporter>();
+            HashSet<Type> assetImportersTypes = new HashSet<Type>();
+            
             for (var i = 0; i < files.Length; i++)
             {
                 string absoluteFilePath = files[i];
@@ -174,10 +176,17 @@ namespace BrunoMikoski.PresetManager
 
                 AssetImporter assetImporter = AssetImporter.GetAtPath(relativeFilePath);
 
+                if (assetImporter == null)
+                    continue;
+                
                 if (!PresetManagerUtils.HasPresetFor(assetImporter))
                     continue;
                 
+                if(assetImportersTypes.Contains(assetImporter.GetType()))
+                    continue;
+                
                 assetImporters.Add(assetImporter);
+                assetImportersTypes.Add(assetImporter.GetType());
             }
 
             assetImportersType = assetImporters.ToArray();

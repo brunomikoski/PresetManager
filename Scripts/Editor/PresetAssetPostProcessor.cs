@@ -1,9 +1,22 @@
-﻿using UnityEditor;
+﻿using System.IO;
+using UnityEditor;
 
 namespace BrunoMikoski.PresetManager
 {
     public class PresetAssetPostProcessor : AssetPostprocessor
     {
+        private void OnPreprocessAsset()
+        {
+            if (!assetImporter.importSettingsMissing)
+                return;
+            string path = Path.GetDirectoryName(assetPath);
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            PresetManagerUtils.ApplySettingsToAsset(path, assetImporter);
+
+        }
+
         static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets,
             string[] movedFromAssetPaths)
         {
