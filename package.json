@@ -1,0 +1,10 @@
+{
+    "name": "com.brunomikoski.presetmanager",
+    "displayName": "Preset Manager",
+    "version": "0.1.0",
+    "unity": "2019.3",
+    "description": "The missing folder based preset for assets.",
+    "keywords": [ "asset importer", "preset", "folder" ],
+    "category": "editor extensions",
+    "dependencies": {},
+  }
