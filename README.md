@@ -15,7 +15,7 @@ Automatically applies to new prefabs
 You can apply the specific preset per folder.
 
 ## System Requirements
-Unity 2019.3.0 or later versions. Feel free to try an older version, should work just fine.
+Unity 2018.4.0 or later versions. Feel free to try an older version, should work just fine.
 
 ## Installation
 You can also install via git URL by adding this entry in your **manifest.json**
