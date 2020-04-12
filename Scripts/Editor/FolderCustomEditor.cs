@@ -52,7 +52,7 @@ namespace BrunoMikoski.PresetManager
         private void DrawPresetManager()
         {
             EditorGUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("Assets Preset Manager", EditorStyles.toolbarTextField);
+            EditorGUILayout.LabelField("Assets Preset Manager", EditorStyles.toolbarDropDown);
             for (var i = 0; i < assetImportersType.Length; i++)
             {
                 AssetImporter assetImporter = assetImportersType[i];
@@ -64,7 +64,6 @@ namespace BrunoMikoski.PresetManager
                     EditorGUI.indentLevel++;
                     ShowOptionsForImporter(assetImporter);
                     EditorGUI.indentLevel--;
-
                 }
             }
 
@@ -78,7 +77,7 @@ namespace BrunoMikoski.PresetManager
             EditorGUILayout.BeginHorizontal("Box");
             bool hasAnyPresetForFolder = PresetManagerUtils.HasAnyPresetForFolder(relativeFolderPath);
             EditorGUI.BeginDisabledGroup(!hasAnyPresetForFolder);
-            if (GUILayout.Button("Apply to all", EditorStyles.toolbarButton))
+            if (GUILayout.Button("Apply on current", EditorStyles.toolbarButton))
             {
                 PresetManagerUtils.ApplyPresetsToFolder(relativeFolderPath);
             }
@@ -159,7 +158,7 @@ namespace BrunoMikoski.PresetManager
 
         private void ReadFolder()
         {
-            string[] files = Directory.GetFiles(absoluteFolderPath);
+            string[] files = GetAllFiles(absoluteFolderPath);
 
             HashSet<AssetImporter> assetImporters = new HashSet<AssetImporter>();
             HashSet<Type> assetImportersTypes = new HashSet<Type>();
@@ -189,6 +188,26 @@ namespace BrunoMikoski.PresetManager
             assetImportersType = assetImporters.ToArray();
             if (assetImportersTypeFoldout == null || assetImportersTypeFoldout.Length != assetImportersType.Length)
                 assetImportersTypeFoldout = new bool[assetImportersType.Length];
+        }
+
+        private string[] GetAllFiles(string absoluteFolderPath)
+        {
+            List<string> filesPath = new List<string>();
+            SearchForAllFiles(absoluteFolderPath, ref filesPath);
+            return filesPath.ToArray();
+        }
+
+        private void SearchForAllFiles(string directoryAbsolutePath, ref List<string> filesPath)
+        {
+            filesPath.AddRange(Directory.GetFiles(directoryAbsolutePath));
+
+            string[] folderPaths = Directory.GetDirectories(directoryAbsolutePath);
+            for (int i = 0; i < folderPaths.Length; i++)
+            {
+                string folderPath = folderPaths[i];
+                if (!PresetManagerUtils.HasAnyPresetForFolder(PresetManagerUtils.AbsoluteToRelativePath(folderPath)))
+                    SearchForAllFiles(folderPath, ref filesPath);
+            }
         }
     }
 }
