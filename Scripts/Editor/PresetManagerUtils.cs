@@ -9,7 +9,7 @@ namespace BrunoMikoski.PresetManager
 {
     public static class PresetManagerUtils
     {
-        private const string PRESET_MANAGER_DATA_STORAGE_KEY = "Preset_Manager_Data_Key";
+        private static string PRESET_MANAGER_DATA_STORAGE_KEY = $"{Application.productName}_Preset_Manager_Data_Key";
         
         private static List<Preset> projectPresets;
         private static List<Preset> ProjectPresets
