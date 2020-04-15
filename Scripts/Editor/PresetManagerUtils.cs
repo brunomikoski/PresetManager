@@ -22,45 +22,22 @@ namespace BrunoMikoski.PresetManager
             }
         }
 
-        private static PresetManagerData presetManagerData;
-        private static PresetManagerData PresetManagerData
-        {
-            get
-            {
-                if (presetManagerData == null)
-                {
-                    string storedJson = EditorPrefs.GetString(PRESET_MANAGER_DATA_STORAGE_KEY, string.Empty);
-                    presetManagerData = new PresetManagerData();
-                    if (!string.IsNullOrEmpty(storedJson))
-                    {
-                        EditorJsonUtility.FromJsonOverwrite(storedJson, presetManagerData);
-                    }
-                }
-                
-
-                return presetManagerData;
-            }
-        }
-        
-        private static bool isFolderDataDirty;
-
-
-
         private static void LoadProjectPresets()
         {
             string[] presetsGUIDs = AssetDatabase.FindAssets("t:Preset");
 
             projectPresets = new List<Preset>();
-            foreach (string presetsGuiD in presetsGUIDs)
+            for (var i = 0; i < presetsGUIDs.Length; i++)
             {
-                projectPresets.Add(AssetDatabase.LoadAssetAtPath<Preset>(AssetDatabase.GUIDToAssetPath(presetsGuiD)));
+                projectPresets.Add(
+                    AssetDatabase.LoadAssetAtPath<Preset>(AssetDatabase.GUIDToAssetPath(presetsGUIDs[i])));
             }
         }
 
         public static Preset[] GetAvailablePresetsForAssetImporter(AssetImporter assetImporter)
         {
             List<Preset> resultPresets = new List<Preset>();
-            for (var i = 0; i < ProjectPresets.Count; i++)
+            for (int i = 0; i < ProjectPresets.Count; i++)
             {
                 Preset preset = ProjectPresets[i];
                 if (!preset.ApplyTo(assetImporter))
@@ -74,12 +51,12 @@ namespace BrunoMikoski.PresetManager
 
         public static bool HasAnyPresetForFolder(string relativeFolderPath)
         {
-            return PresetManagerData.HasAnyPresetForFolder(relativeFolderPath);
+            return PresetManagerStorage.Instance.HasAnyPresetForFolder(relativeFolderPath);
         }
         
         public static bool HasPresetFor(AssetImporter assetImporter)
         {
-            for (var i = 0; i < ProjectPresets.Count; i++)
+            for (int i = 0; i < ProjectPresets.Count; i++)
             {
                 Preset preset = ProjectPresets[i];
                 if (!preset.ApplyTo(assetImporter))
@@ -94,36 +71,24 @@ namespace BrunoMikoski.PresetManager
         public static bool TryGetAssetPresetFromFolder(string relativeFolderPath, AssetImporter assetImporter,
             out Preset preset)
         {
-            return PresetManagerData.TryGetAssetPresetFromFolder(relativeFolderPath, assetImporter, out preset);
+            return PresetManagerStorage.Instance.TryGetAssetPresetFromFolder(relativeFolderPath, assetImporter, out preset);
         }
 
         public static void SetPresetForFolder(string relativeFolderPath, Preset preset)
         {
-            PresetManagerData.SetPresetForFolder(relativeFolderPath, preset);
-            isFolderDataDirty = true;
+            PresetManagerStorage.Instance.SetPresetForFolder(relativeFolderPath, preset);
         }
 
         public static void ClearPresetForFolder(string relativeFolderPath)
         {
-            PresetManagerData.ClearPresetForFolder(relativeFolderPath);
-            isFolderDataDirty = true;
+            PresetManagerStorage.Instance.ClearPresetForFolder(relativeFolderPath);
         }
         
         public static void ClearAllPresetsForFolder(string relativeFolderPath)
         {
-            PresetManagerData.ClearAllPresetForFolder(relativeFolderPath);
-            isFolderDataDirty = true;
+            PresetManagerStorage.Instance.ClearAllPresetForFolder(relativeFolderPath);
         }
-
-        public static void SaveData()
-        {
-            if (!isFolderDataDirty)
-                return;
-
-            EditorPrefs.SetString(PRESET_MANAGER_DATA_STORAGE_KEY, EditorJsonUtility.ToJson(PresetManagerData));
-            isFolderDataDirty = false;
-        }
-
+        
         public static void ProjectPresetsChanged()
         {
             projectPresets = null;
@@ -137,7 +102,7 @@ namespace BrunoMikoski.PresetManager
             relativeParentPath = string.Empty;
             while (currentDirectory != null && !string.Equals(currentDirectory.FullName, Directory.GetCurrentDirectory(), StringComparison.Ordinal))
             {
-                if (PresetManagerData.TryGetPresetFolderPathFromFolder(AbsoluteToRelativePath(currentDirectory.FullName),
+                if (PresetManagerStorage.Instance.TryGetPresetFolderPathFromFolder(AbsoluteToRelativePath(currentDirectory.FullName),
                     assetImporter, out string ownerFolderPath))
                 {
                     relativeParentPath = ownerFolderPath;
@@ -157,7 +122,7 @@ namespace BrunoMikoski.PresetManager
             preset = null;
             while (currentDirectory != null && !string.Equals(currentDirectory.FullName, Directory.GetCurrentDirectory(), StringComparison.Ordinal))
             {
-                if (PresetManagerData.TryGetAssetPresetFromFolder(AbsoluteToRelativePath(currentDirectory.FullName),
+                if (PresetManagerStorage.Instance.TryGetAssetPresetFromFolder(AbsoluteToRelativePath(currentDirectory.FullName),
                     assetImporter, out preset))
                     break;
                 currentDirectory = currentDirectory.Parent;
@@ -169,13 +134,12 @@ namespace BrunoMikoski.PresetManager
         
         public static string AbsoluteToRelativePath(string absoluteFilePath)
         {
-            absoluteFilePath = absoluteFilePath.Replace("\\", "/");
-            return $"Assets{absoluteFilePath.Replace(Application.dataPath, "")}";
+            return "Assets" + absoluteFilePath.Substring(Application.dataPath.Length);
         }
 
         public static string RelativeToAbsolutePath(string relativeFilePath)
         {
-            return (Application.dataPath.Replace("/Assets", "") + "/" + relativeFilePath).Replace("/", "\\");
+            return Path.GetFullPath(relativeFilePath);
         }
 
         public static void ApplySettingsToAsset(string relativeFolderPath, AssetImporter assetImporter)

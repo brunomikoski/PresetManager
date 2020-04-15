@@ -1,40 +1,61 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEditor.Presets;
 using UnityEngine;
 
 namespace BrunoMikoski.PresetManager
 {
-    [Serializable]
-    public sealed class PresetManagerData
+    public class PresetManagerStorage : ScriptableObject
     {
-        [Serializable]
-        private class FolderToPresetReference
+        private const string DEFAULT_STORAGE_PATH = "Assets/PresetManager/PresetManager.asset";
+
+        [SerializeField]
+        private List<FolderToPresetDataNew> foldersPresets = new List<FolderToPresetDataNew>();
+
+        private static PresetManagerStorage instance;
+        public static PresetManagerStorage Instance
         {
-            [SerializeField]
-            private string folderGUID;
-            public string FolderGuid => folderGUID;
-
-            [SerializeField]
-            private string presetGUID;
-            public string PresetGuid => presetGUID;
-
-            public FolderToPresetReference(string folderGUID, string presetGUID)
+            get
             {
-                this.folderGUID = folderGUID;
-                this.presetGUID = presetGUID;
-            }
-
-            public void OverridePresetGUID(string presetGUID)
-            {
-                this.presetGUID = presetGUID;
+                if (instance == null)
+                    instance = GetOrCreateInstance();
+                return instance;
             }
         }
 
-        [SerializeField]
-        private List<FolderToPresetReference> foldersToPreset = new List<FolderToPresetReference>();
+        public static bool IsInstanceAvailable()
+        {
+            return instance != null;
+        }
+        
+        public static PresetManagerStorage GetOrCreateInstance()
+        {
+            string[] avaialbleGUIDs = AssetDatabase.FindAssets("t:PresetManagerStorage");
+            PresetManagerStorage getOrCreateInstance;
+            if (avaialbleGUIDs.Length == 0)
+            {
+                string directory = Path.GetFullPath(DEFAULT_STORAGE_PATH);
+                
+                if (!Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
 
+                getOrCreateInstance = CreateInstance<PresetManagerStorage>();
+
+                AssetDatabase.CreateAsset(getOrCreateInstance, DEFAULT_STORAGE_PATH);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+            else
+            {
+                getOrCreateInstance = AssetDatabase.LoadAssetAtPath<PresetManagerStorage>(
+                    AssetDatabase.GUIDToAssetPath(avaialbleGUIDs[0]));
+            }
+
+            return getOrCreateInstance;
+        }
+        
         public bool HasAnyPresetForFolder(string relativeFolderPath)
         {
             return TryGetPresetsForFolder(relativeFolderPath, out Preset[] presets);
@@ -83,9 +104,9 @@ namespace BrunoMikoski.PresetManager
         {
             List<Preset> presetsList = new List<Preset>();
             string folderGUID = AssetDatabase.AssetPathToGUID(relativeFolderPath);
-            for (int i = 0; i < foldersToPreset.Count; i++)
+            for (int i = 0; i < foldersPresets.Count; i++)
             {
-                FolderToPresetReference folderToPresetReference = foldersToPreset[i];
+                FolderToPresetDataNew folderToPresetReference = foldersPresets[i];
                 if (string.Equals(folderToPresetReference.FolderGuid, folderGUID, StringComparison.Ordinal))
                 {
                     string presetPath = AssetDatabase.GUIDToAssetPath(folderToPresetReference.PresetGuid);
@@ -105,21 +126,23 @@ namespace BrunoMikoski.PresetManager
         {
             if (TryGetFolderPresetIndex(relativeFolderPath, out int targetIndex))
             {
-                foldersToPreset[targetIndex].OverridePresetGUID(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(preset)));
+                foldersPresets[targetIndex].OverridePresetGUID(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(preset)));
             }
             else
             {
-                foldersToPreset.Add(new FolderToPresetReference(AssetDatabase.AssetPathToGUID(relativeFolderPath),
+                foldersPresets.Add(new FolderToPresetDataNew(AssetDatabase.AssetPathToGUID(relativeFolderPath),
                     AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(preset))));
             }
+
+            EditorUtility.SetDirty(this);
         }
 
         private bool TryGetFolderPresetIndex(string relativeFolderPath, out int index)
         {
             string folderGUID = AssetDatabase.AssetPathToGUID(relativeFolderPath);
-            for (int i = 0; i < foldersToPreset.Count; i++)
+            for (int i = 0; i < foldersPresets.Count; i++)
             {
-                FolderToPresetReference folderToPresetReference = foldersToPreset[i];
+                FolderToPresetDataNew folderToPresetReference = foldersPresets[i];
                 if (string.Equals(folderToPresetReference.FolderGuid, folderGUID, StringComparison.Ordinal))
                 {
                     index = i;
@@ -134,14 +157,14 @@ namespace BrunoMikoski.PresetManager
         public void ClearPresetForFolder(string relativeFolderPath)
         {
             string folderPathGUID = AssetDatabase.AssetPathToGUID(relativeFolderPath);
-            for (int i = 0; i < foldersToPreset.Count; i++)
+            for (int i = 0; i < foldersPresets.Count; i++)
             {
-                FolderToPresetReference folderToPresetReference = foldersToPreset[i];
+                FolderToPresetDataNew folderToPresetReference = foldersPresets[i];
 
                 if (string.Equals(folderToPresetReference.FolderGuid, folderPathGUID, StringComparison.Ordinal))
                 {
-                    foldersToPreset.RemoveAt(i);
-                    break;
+                    foldersPresets.RemoveAt(i);
+                    EditorUtility.SetDirty(this);
                 }
             }
         }
@@ -149,16 +172,19 @@ namespace BrunoMikoski.PresetManager
         public void ClearAllPresetForFolder(string relativeFolderPath)
         {
             string folderPathGUID = AssetDatabase.AssetPathToGUID(relativeFolderPath);
-            for (int i = foldersToPreset.Count - 1; i >= 0; i--)
+            for (int i = foldersPresets.Count - 1; i >= 0; i--)
             {
-                FolderToPresetReference folderToPresetReference = foldersToPreset[i];
+                FolderToPresetDataNew folderToPresetReference = foldersPresets[i];
 
                 if (string.Equals(folderToPresetReference.FolderGuid, folderPathGUID, StringComparison.Ordinal))
                 {
-                    foldersToPreset.RemoveAt(i);
+                    foldersPresets.RemoveAt(i);
                 }
             }
+
+            EditorUtility.SetDirty(this);
         }
 
+        
     }
 }
