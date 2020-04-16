@@ -12,7 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the `PresetManagerStorage` where the settings per folder are store and can serialized
 - Added option to customize each one of the Preset 'PropertyModification' per folder.
 
-
 ### Changed
 - Fixed an issue where the Preset would be applied when selecting the folder.
 - A lot of general qol improvements
@@ -20,8 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ## [0.1.0] - 2020-04-14
+### Changed
+- Fixed license
+
+## [0.1.0] - 2020-04-14
 ### Added
 - Initial Versioning
 
-[0.2.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.0.1...v0.0.2
-[0.1.0]: https://github.com/olivierlacan/keep-a-changelog/releases/tag/v0.0.1
+[0.2.0]: https://github.com/badawe/PresetManager/releases/tag/v0.2.0
+[0.1.1]: https://github.com/badawe/PresetManager/releases/tag/v0.1.1
+[0.1.0]: https://github.com/badawe/PresetManager/releases/tag/v0.1.0
