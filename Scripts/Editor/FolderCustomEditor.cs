@@ -21,7 +21,7 @@ namespace BrunoMikoski.PresetManager
         private void OnEnable()
         {
             relativeFolderPath = AssetDatabase.GetAssetPath(target);
-            absoluteFolderPath = Application.dataPath.Replace("/Assets", "") + "/" + relativeFolderPath;
+            absoluteFolderPath = PresetManagerUtils.RelativeToAbsolutePath(relativeFolderPath);
             isFolder = Directory.Exists(absoluteFolderPath);
 
             if (!isFolder)
@@ -29,30 +29,30 @@ namespace BrunoMikoski.PresetManager
             
             ReadFolder();
         }
-
-        private void OnDisable()
+        
+        public override void OnInspectorGUI()
         {
-            PresetManagerUtils.SaveData();
-        }
-
-        protected override void OnHeaderGUI()
-        {
-            base.OnHeaderGUI();
+            base.OnInspectorGUI();
 
             if (!isFolder)
                 return;
 
             if (assetImportersType == null || assetImportersType.Length == 0)
                 return;
-
+            
+            bool wasGUIEnabled = GUI.enabled;
+            
+            GUI.enabled = true;
             DrawPresetManager();
-
+            GUI.enabled = wasGUIEnabled;
         }
 
         private void DrawPresetManager()
         {
             EditorGUILayout.BeginVertical("Box");
             EditorGUILayout.LabelField("Assets Preset Manager", EditorStyles.toolbarDropDown);
+            EditorGUI.indentLevel++;
+
             for (var i = 0; i < assetImportersType.Length; i++)
             {
                 AssetImporter assetImporter = assetImportersType[i];
@@ -61,12 +61,10 @@ namespace BrunoMikoski.PresetManager
 
                 if (assetImportersTypeFoldout[i])
                 {
-                    EditorGUI.indentLevel++;
                     ShowOptionsForImporter(assetImporter);
-                    EditorGUI.indentLevel--;
                 }
             }
-
+            EditorGUI.indentLevel--;
             DrawOptions();
 
             EditorGUILayout.EndVertical();
@@ -100,8 +98,8 @@ namespace BrunoMikoski.PresetManager
 
             if (selectedIndex == -1)
             {
-                if (PresetManagerUtils.TryGetAssetPresetFromFolder(relativeFolderPath, assetImporter, out Preset appliedPreset))
-                    selectedIndex = Array.IndexOf(presets, appliedPreset) + 1;
+                if (PresetManagerUtils.TryGetAssetPresetFromFolder(relativeFolderPath, assetImporter, out PresetData appliedPreset))
+                    selectedIndex = Array.IndexOf(presets, appliedPreset.Preset) + 1;
                 else
                     selectedIndex = 0;
             }
@@ -122,7 +120,7 @@ namespace BrunoMikoski.PresetManager
 
             using (new GUILayout.HorizontalScope())
             {
-                GUILayout.Space(14);
+                GUILayout.Space(20);
                 selectedIndex = GUILayout.SelectionGrid(selectedIndex, presetsNames, 1, EditorStyles.radioButton);
             }
 
