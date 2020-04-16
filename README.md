@@ -7,10 +7,6 @@ Preset Manager is the missing per folder preset for Unity.
 
 Applies Preset to objects respecting the folder structure and settings.
 
-![inspector](/Documentation~/general-usage.gif)
-![Manager](/Documentation~/add-new-from-manager.gif)
-![properties](/Documentation~/properties-modification.gif)
-
 
 ## Features
 - Load all available Presets in the Project
@@ -35,3 +31,5 @@ You can also install via git URL by adding this entry in your **manifest.json**
 ```
 from Window->Package Manager, click on the + sign and Add from git: https://github.com/badawe/PresetManager.git
 ```
+
+![inspector](/Documentation~/general-usage.gif) ![Manager](/Documentation~/add-new-from-manager.gif) ![properties](/Documentation~/properties-modification.gif)
