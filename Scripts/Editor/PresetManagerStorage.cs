@@ -7,12 +7,25 @@ using UnityEngine;
 
 namespace BrunoMikoski.PresetManager
 {
+    public struct PresetData
+    {
+        public Preset Preset;
+        public string[] TargetParameters;
+
+        public PresetData(Preset preset, string[] targetParameters)
+        {
+            Preset = preset;
+            TargetParameters = targetParameters;
+        }
+    }
+    
     public class PresetManagerStorage : ScriptableObject
     {
         private const string DEFAULT_STORAGE_PATH = "Assets/PresetManager/PresetManager.asset";
 
         [SerializeField]
-        private List<FolderToPresetDataNew> foldersPresets = new List<FolderToPresetDataNew>();
+        private List<FolderToPresetData> foldersPresets = new List<FolderToPresetData>();
+        public List<FolderToPresetData> FoldersPresets => foldersPresets;
 
         private static PresetManagerStorage instance;
         public static PresetManagerStorage Instance
@@ -58,19 +71,19 @@ namespace BrunoMikoski.PresetManager
         
         public bool HasAnyPresetForFolder(string relativeFolderPath)
         {
-            return TryGetPresetsForFolder(relativeFolderPath, out Preset[] presets);
+            return TryGetPresetsForFolder(relativeFolderPath, out PresetData[] presets);
         }
 
         public bool TryGetPresetFolderPathFromFolder(string relativeFolderPath, AssetImporter assetImporter,
             out string ownerFolder)
         {
             ownerFolder = string.Empty;
-            if (TryGetPresetsForFolder(relativeFolderPath, out Preset[] presets))
+            if (TryGetPresetsForFolder(relativeFolderPath, out PresetData[] presets))
             {
-                for (var i = 0; i < presets.Length; i++)
+                for (int i = 0; i < presets.Length; i++)
                 {
-                    Preset currentPreset = presets[i];
-                    if (currentPreset.ApplyTo(assetImporter))
+                    PresetData currentPreset = presets[i];
+                    if (currentPreset.Preset.CanBeAppliedTo(assetImporter))
                     {
                         ownerFolder = relativeFolderPath;
                         return true;
@@ -81,14 +94,14 @@ namespace BrunoMikoski.PresetManager
             return false;
         }
 
-        public bool TryGetAssetPresetFromFolder(string relativeFolderPath, AssetImporter assetImporter, out Preset preset)
+        public bool TryGetAssetPresetFromFolder(string relativeFolderPath, AssetImporter assetImporter, out PresetData preset)
         {
-            if (TryGetPresetsForFolder(relativeFolderPath, out Preset[] presets))
+            if (TryGetPresetsForFolder(relativeFolderPath, out PresetData[] presets))
             {
-                for (var i = 0; i < presets.Length; i++)
+                for (int i = 0; i < presets.Length; i++)
                 {
-                    Preset currentPreset = presets[i];
-                    if (currentPreset.ApplyTo(assetImporter))
+                    PresetData currentPreset = presets[i];
+                    if (currentPreset.Preset.CanBeAppliedTo(assetImporter))
                     {
                         preset = currentPreset;
                         return true;
@@ -96,24 +109,25 @@ namespace BrunoMikoski.PresetManager
                 }
             }
 
-            preset = null;
+            preset = default;
             return false;
         }
         
-        public bool TryGetPresetsForFolder(string relativeFolderPath, out Preset[] preset)
+        public bool TryGetPresetsForFolder(string relativeFolderPath, out PresetData[] preset)
         {
-            List<Preset> presetsList = new List<Preset>();
+            List<PresetData> presetsList = new List<PresetData>();
             string folderGUID = AssetDatabase.AssetPathToGUID(relativeFolderPath);
             for (int i = 0; i < foldersPresets.Count; i++)
             {
-                FolderToPresetDataNew folderToPresetReference = foldersPresets[i];
+                FolderToPresetData folderToPresetReference = foldersPresets[i];
                 if (string.Equals(folderToPresetReference.FolderGuid, folderGUID, StringComparison.Ordinal))
                 {
                     string presetPath = AssetDatabase.GUIDToAssetPath(folderToPresetReference.PresetGuid);
                     Preset loadedPreset = AssetDatabase.LoadAssetAtPath<Preset>(presetPath);
                     if (loadedPreset != null)
                     {
-                        presetsList.Add(loadedPreset);
+                        presetsList.Add(new PresetData(loadedPreset,
+                            folderToPresetReference.GetModifications(loadedPreset)));
                     }
                 }
             }
@@ -130,7 +144,7 @@ namespace BrunoMikoski.PresetManager
             }
             else
             {
-                foldersPresets.Add(new FolderToPresetDataNew(AssetDatabase.AssetPathToGUID(relativeFolderPath),
+                foldersPresets.Add(new FolderToPresetData(AssetDatabase.AssetPathToGUID(relativeFolderPath),
                     AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(preset))));
             }
 
@@ -142,7 +156,7 @@ namespace BrunoMikoski.PresetManager
             string folderGUID = AssetDatabase.AssetPathToGUID(relativeFolderPath);
             for (int i = 0; i < foldersPresets.Count; i++)
             {
-                FolderToPresetDataNew folderToPresetReference = foldersPresets[i];
+                FolderToPresetData folderToPresetReference = foldersPresets[i];
                 if (string.Equals(folderToPresetReference.FolderGuid, folderGUID, StringComparison.Ordinal))
                 {
                     index = i;
@@ -159,7 +173,7 @@ namespace BrunoMikoski.PresetManager
             string folderPathGUID = AssetDatabase.AssetPathToGUID(relativeFolderPath);
             for (int i = 0; i < foldersPresets.Count; i++)
             {
-                FolderToPresetDataNew folderToPresetReference = foldersPresets[i];
+                FolderToPresetData folderToPresetReference = foldersPresets[i];
 
                 if (string.Equals(folderToPresetReference.FolderGuid, folderPathGUID, StringComparison.Ordinal))
                 {
@@ -174,7 +188,7 @@ namespace BrunoMikoski.PresetManager
             string folderPathGUID = AssetDatabase.AssetPathToGUID(relativeFolderPath);
             for (int i = foldersPresets.Count - 1; i >= 0; i--)
             {
-                FolderToPresetDataNew folderToPresetReference = foldersPresets[i];
+                FolderToPresetData folderToPresetReference = foldersPresets[i];
 
                 if (string.Equals(folderToPresetReference.FolderGuid, folderPathGUID, StringComparison.Ordinal))
                 {

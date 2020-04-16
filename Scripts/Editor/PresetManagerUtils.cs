@@ -9,8 +9,6 @@ namespace BrunoMikoski.PresetManager
 {
     public static class PresetManagerUtils
     {
-        private static string PRESET_MANAGER_DATA_STORAGE_KEY = $"{Application.productName}_Preset_Manager_Data_Key";
-        
         private static List<Preset> projectPresets;
         private static List<Preset> ProjectPresets
         {
@@ -69,7 +67,7 @@ namespace BrunoMikoski.PresetManager
         }
 
         public static bool TryGetAssetPresetFromFolder(string relativeFolderPath, AssetImporter assetImporter,
-            out Preset preset)
+            out PresetData preset)
         {
             return PresetManagerStorage.Instance.TryGetAssetPresetFromFolder(relativeFolderPath, assetImporter, out preset);
         }
@@ -115,11 +113,11 @@ namespace BrunoMikoski.PresetManager
         }
         
         public static bool TryToGetParentPresetSettings(string relativeFolderPath, AssetImporter assetImporter,
-            out Preset preset)
+            out PresetData preset)
         {
             DirectoryInfo currentDirectory = new DirectoryInfo(RelativeToAbsolutePath(relativeFolderPath)).Parent;
 
-            preset = null;
+            preset = default;
             while (currentDirectory != null && !string.Equals(currentDirectory.FullName, Directory.GetCurrentDirectory(), StringComparison.Ordinal))
             {
                 if (PresetManagerStorage.Instance.TryGetAssetPresetFromFolder(AbsoluteToRelativePath(currentDirectory.FullName),
@@ -128,7 +126,7 @@ namespace BrunoMikoski.PresetManager
                 currentDirectory = currentDirectory.Parent;
             }
 
-            return preset != null;
+            return preset.Preset != null;
         }
         
         
@@ -144,15 +142,21 @@ namespace BrunoMikoski.PresetManager
 
         public static void ApplySettingsToAsset(string relativeFolderPath, AssetImporter assetImporter)
         {
-            if (TryGetAssetPresetFromFolder(relativeFolderPath, assetImporter, out Preset preset))
+            if (TryGetAssetPresetFromFolder(relativeFolderPath, assetImporter, out PresetData preset))
             {
-                preset.ApplyTo(assetImporter);
+                if (preset.Preset.ApplyTo(assetImporter, preset.TargetParameters))
+                {
+                    EditorUtility.SetDirty(assetImporter);
+                }
             }
             else
             {
                 if(TryToGetParentPresetSettings(relativeFolderPath, assetImporter, out preset))
                 {
-                    preset.ApplyTo(assetImporter);
+                    if (preset.Preset.ApplyTo(assetImporter, preset.TargetParameters))
+                    {
+                        EditorUtility.SetDirty(assetImporter);
+                    }
                 }
             }
         }

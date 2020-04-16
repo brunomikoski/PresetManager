@@ -21,7 +21,7 @@ namespace BrunoMikoski.PresetManager
         private void OnEnable()
         {
             relativeFolderPath = AssetDatabase.GetAssetPath(target);
-            absoluteFolderPath = Application.dataPath.Replace("/Assets", "") + "/" + relativeFolderPath;
+            absoluteFolderPath = PresetManagerUtils.RelativeToAbsolutePath(relativeFolderPath);
             isFolder = Directory.Exists(absoluteFolderPath);
 
             if (!isFolder)
@@ -98,8 +98,8 @@ namespace BrunoMikoski.PresetManager
 
             if (selectedIndex == -1)
             {
-                if (PresetManagerUtils.TryGetAssetPresetFromFolder(relativeFolderPath, assetImporter, out Preset appliedPreset))
-                    selectedIndex = Array.IndexOf(presets, appliedPreset) + 1;
+                if (PresetManagerUtils.TryGetAssetPresetFromFolder(relativeFolderPath, assetImporter, out PresetData appliedPreset))
+                    selectedIndex = Array.IndexOf(presets, appliedPreset.Preset) + 1;
                 else
                     selectedIndex = 0;
             }
