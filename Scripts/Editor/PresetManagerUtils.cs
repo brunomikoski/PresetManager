@@ -38,7 +38,7 @@ namespace BrunoMikoski.PresetManager
             for (int i = 0; i < ProjectPresets.Count; i++)
             {
                 Preset preset = ProjectPresets[i];
-                if (!preset.ApplyTo(assetImporter))
+                if (!preset.CanBeAppliedTo(assetImporter))
                     continue;
                 
                 resultPresets.Add(preset);
@@ -57,7 +57,7 @@ namespace BrunoMikoski.PresetManager
             for (int i = 0; i < ProjectPresets.Count; i++)
             {
                 Preset preset = ProjectPresets[i];
-                if (!preset.ApplyTo(assetImporter))
+                if (!preset.CanBeAppliedTo(assetImporter))
                     continue;
 
                 return true;
