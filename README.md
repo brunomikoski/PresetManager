@@ -1,6 +1,7 @@
 # Preset Manager
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://github.com/badawe/PresetManager/blob/develop/LICENSE)
 [![openupm](https://img.shields.io/npm/v/com.brunomikoski.presetmanager?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.brunomikoski.presetmanager/)
+
 ![](https://img.shields.io/github/followers/badawe?label=Follow&style=social) ![](https://img.shields.io/twitter/follow/brunomikoski?style=social)
 
 Preset Manager is the missing per folder preset for Unity.
