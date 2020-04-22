@@ -36,8 +36,7 @@ namespace BrunoMikoski.PresetManager
                 
                 DrawFolderToPreset(i, folderToPresetData);
             }
-            DrawExtraOptions();
-
+            DrawExtraOptions();            
         }
 
         private void DrawExtraOptions()
