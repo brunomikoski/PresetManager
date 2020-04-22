@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 - Implement a proper Settings Provider to toggle the Folder Custom Editor
 
+## [0.2.1] - 2020-04-21
+### Changed
+- Fixed problems when checking for new imported assets
+- Fixed folder custom inspector with wrong space
+- Fix issue when not reimporting assets after applying the changes.
+
 ## [0.2.0] - 2020-04-16
 ### Added
 - Added the `PresetManagerStorage` where the settings per folder are store and can serialized
@@ -26,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial Versioning
 
+[0.2.1]: https://github.com/badawe/PresetManager/releases/tag/v0.2.1
 [0.2.0]: https://github.com/badawe/PresetManager/releases/tag/v0.2.0
 [0.1.1]: https://github.com/badawe/PresetManager/releases/tag/v0.1.1
 [0.1.0]: https://github.com/badawe/PresetManager/releases/tag/v0.1.0
