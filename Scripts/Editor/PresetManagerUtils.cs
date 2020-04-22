@@ -144,23 +144,26 @@ namespace BrunoMikoski.PresetManager
         {
             if (TryGetAssetPresetFromFolder(relativeFolderPath, assetImporter, out PresetData preset))
             {
-                if (preset.Preset.ApplyTo(assetImporter, preset.TargetParameters))
-                {
-                    EditorUtility.SetDirty(assetImporter);
-                }
+                ApplyPresetToAssetImporter(assetImporter, preset);
             }
             else
             {
                 if(TryToGetParentPresetSettings(relativeFolderPath, assetImporter, out preset))
                 {
-                    if (preset.Preset.ApplyTo(assetImporter, preset.TargetParameters))
-                    {
-                        EditorUtility.SetDirty(assetImporter);
-                    }
+                    ApplyPresetToAssetImporter(assetImporter, preset);
                 }
             }
         }
-        
+
+        private static void ApplyPresetToAssetImporter(AssetImporter assetImporter, PresetData preset)
+        {
+            if (preset.Preset.ApplyTo(assetImporter, preset.TargetParameters))
+            {
+                assetImporter.SaveAndReimport();
+                EditorUtility.SetDirty(assetImporter);
+            }
+        }
+
         public static void ApplyPresetsToFolder(string relativeFolderPath)
         {
             projectPresets = null;

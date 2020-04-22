@@ -49,6 +49,10 @@ namespace BrunoMikoski.PresetManager
 
         private void DrawPresetManager()
         {
+            using (new GUILayout.HorizontalScope())
+            {
+                GUILayout.Space(-8);
+                
             EditorGUILayout.BeginVertical("Box");
             EditorGUILayout.LabelField("Assets Preset Manager", EditorStyles.toolbarDropDown);
             EditorGUI.indentLevel++;
@@ -68,6 +72,7 @@ namespace BrunoMikoski.PresetManager
             DrawOptions();
 
             EditorGUILayout.EndVertical();
+            }
         }
 
         private void DrawOptions()

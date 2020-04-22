@@ -10,7 +10,7 @@ namespace BrunoMikoski.PresetManager
             if (!assetImporter.importSettingsMissing)
                 return;
 
-            if (!IsPresetAsset(assetImporter.assetPath))
+            if (IsPresetAsset(assetImporter.assetPath))
                 return;
             
             string path = Path.GetDirectoryName(assetPath);
@@ -34,6 +34,8 @@ namespace BrunoMikoski.PresetManager
                 PresetManagerUtils.ProjectPresetsChanged();
                 return;
             }
+            
+            
         }
 
         private static bool IsPresetAsset(params string[] assetsPath)
