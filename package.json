@@ -1,7 +1,7 @@
 {
   "name": "com.brunomikoski.presetmanager",
   "displayName": "Preset Manager",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "unity": "2018.4",
   "description": "The missing folder based preset for assets.",
   "keywords": [

@@ -20,6 +20,9 @@ namespace BrunoMikoski.PresetManager
 
         private void OnEnable()
         {
+            if (!PresetManagerSettings.DisplayFolderInspector)
+                return;
+            
             relativeFolderPath = AssetDatabase.GetAssetPath(target);
             absoluteFolderPath = PresetManagerUtils.RelativeToAbsolutePath(relativeFolderPath);
             isFolder = Directory.Exists(absoluteFolderPath);
@@ -53,25 +56,25 @@ namespace BrunoMikoski.PresetManager
             {
                 GUILayout.Space(-8);
                 
-            EditorGUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("Assets Preset Manager", EditorStyles.toolbarDropDown);
-            EditorGUI.indentLevel++;
+                EditorGUILayout.BeginVertical("Box");
+                EditorGUILayout.LabelField("Assets Preset Manager", EditorStyles.toolbarDropDown);
+                EditorGUI.indentLevel++;
 
-            for (var i = 0; i < assetImportersType.Length; i++)
-            {
-                AssetImporter assetImporter = assetImportersType[i];
-                assetImportersTypeFoldout[i] = EditorGUILayout.Foldout(assetImportersTypeFoldout[i],
-                    assetImporter.GetType().Name, EditorStyles.foldout);
-
-                if (assetImportersTypeFoldout[i])
+                for (var i = 0; i < assetImportersType.Length; i++)
                 {
-                    ShowOptionsForImporter(assetImporter);
-                }
-            }
-            EditorGUI.indentLevel--;
-            DrawOptions();
+                    AssetImporter assetImporter = assetImportersType[i];
+                    assetImportersTypeFoldout[i] = EditorGUILayout.Foldout(assetImportersTypeFoldout[i],
+                        assetImporter.GetType().Name, EditorStyles.foldout);
 
-            EditorGUILayout.EndVertical();
+                    if (assetImportersTypeFoldout[i])
+                    {
+                        ShowOptionsForImporter(assetImporter);
+                    }
+                }
+                EditorGUI.indentLevel--;
+                DrawOptions();
+
+                EditorGUILayout.EndVertical();
             }
         }
 
@@ -196,11 +199,12 @@ namespace BrunoMikoski.PresetManager
         private string[] GetAllFiles(string absoluteFolderPath)
         {
             List<string> filesPath = new List<string>();
-            SearchForAllFiles(absoluteFolderPath, ref filesPath);
+            int level = 0;
+            SearchForAllFiles(absoluteFolderPath, ref filesPath, ref level);
             return filesPath.ToArray();
         }
 
-        private void SearchForAllFiles(string directoryAbsolutePath, ref List<string> filesPath)
+        private void SearchForAllFiles(string directoryAbsolutePath, ref List<string> filesPath, ref int level)
         {
             filesPath.AddRange(Directory.GetFiles(directoryAbsolutePath));
 
@@ -208,8 +212,16 @@ namespace BrunoMikoski.PresetManager
             for (int i = 0; i < folderPaths.Length; i++)
             {
                 string folderPath = folderPaths[i];
-                if (!PresetManagerUtils.HasAnyPresetForFolder(PresetManagerUtils.AbsoluteToRelativePath(folderPath)))
-                    SearchForAllFiles(folderPath, ref filesPath);
+                string absoluteToRelativePath = PresetManagerUtils.AbsoluteToRelativePath(folderPath);
+
+                if (level > PresetManagerSettings.MaximumDirectorySearch)
+                    continue;
+
+                if (!PresetManagerUtils.HasAnyPresetForFolder(absoluteToRelativePath))
+                {
+                    level++;
+                    SearchForAllFiles(folderPath, ref filesPath, ref level);
+                }
             }
         }
     }
