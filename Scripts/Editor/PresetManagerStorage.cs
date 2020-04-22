@@ -40,7 +40,7 @@ namespace BrunoMikoski.PresetManager
 
         public static bool IsInstanceAvailable()
         {
-            return instance != null;
+            return Instance != null;
         }
         
         public static PresetManagerStorage GetOrCreateInstance()
