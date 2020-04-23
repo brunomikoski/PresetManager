@@ -11,15 +11,15 @@ namespace BrunoMikoski.PresetManager
                 return;
 
             if (IsPresetAsset(assetImporter.assetPath))
+            {
+                PresetManagerUtils.ProjectPresetsChanged();
                 return;
+            }
             
             string path = Path.GetDirectoryName(assetPath);
             if (string.IsNullOrEmpty(path))
                 return;
-
-            if (!PresetManagerStorage.IsInstanceAvailable())
-                return;
-
+            
             PresetManagerUtils.ApplySettingsToAsset(path, assetImporter);
         }
 
@@ -28,14 +28,11 @@ namespace BrunoMikoski.PresetManager
         {
             if (!PresetManagerStorage.IsInstanceAvailable())
                 return;
-            
-            if (IsPresetAsset(importedAssets) || IsPresetAsset(deletedAssets))
-            {
-                PresetManagerUtils.ProjectPresetsChanged();
+
+            if (!IsPresetAsset(importedAssets) && !IsPresetAsset(deletedAssets)) 
                 return;
-            }
             
-            
+            PresetManagerUtils.ProjectPresetsChanged();
         }
 
         private static bool IsPresetAsset(params string[] assetsPath)

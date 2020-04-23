@@ -18,6 +18,7 @@ namespace BrunoMikoski.PresetManager
             TargetParameters = targetParameters;
         }
     }
+
     
     public class PresetManagerStorage : ScriptableObject
     {
@@ -32,8 +33,7 @@ namespace BrunoMikoski.PresetManager
         {
             get
             {
-                if (instance == null)
-                    instance = GetOrCreateInstance();
+                GetOrCreateInstance();
                 return instance;
             }
         }
@@ -43,32 +43,43 @@ namespace BrunoMikoski.PresetManager
             return Instance != null;
         }
         
-        public static PresetManagerStorage GetOrCreateInstance()
+        private static void GetOrCreateInstance()
         {
+            if (instance != null)
+                return;
+            
             string[] avaialbleGUIDs = AssetDatabase.FindAssets("t:PresetManagerStorage");
-            PresetManagerStorage getOrCreateInstance;
             if (avaialbleGUIDs.Length == 0)
             {
-                string directory = Path.GetFullPath(DEFAULT_STORAGE_PATH);
+                string directoryPath = Path.GetDirectoryName(Path.GetFullPath(DEFAULT_STORAGE_PATH));
                 
-                if (!Directory.Exists(directory))
-                    Directory.CreateDirectory(directory);
+                if (!Directory.Exists(directoryPath))
+                    Directory.CreateDirectory(directoryPath);
 
-                getOrCreateInstance = CreateInstance<PresetManagerStorage>();
+                instance = CreateInstance<PresetManagerStorage>();
 
-                AssetDatabase.CreateAsset(getOrCreateInstance, DEFAULT_STORAGE_PATH);
+                AssetDatabase.CreateAsset(instance, DEFAULT_STORAGE_PATH);
                 AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
             }
             else
             {
-                getOrCreateInstance = AssetDatabase.LoadAssetAtPath<PresetManagerStorage>(
+                instance = AssetDatabase.LoadAssetAtPath<PresetManagerStorage>(
                     AssetDatabase.GUIDToAssetPath(avaialbleGUIDs[0]));
-            }
 
-            return getOrCreateInstance;
+                ValidateInstances();
+            }
         }
-        
+
+        private static void ValidateInstances()
+        {
+            for (int i = Instance.foldersPresets.Count - 1; i >= 0; i--)
+            {
+                FolderToPresetData instanceFoldersPreset = Instance.foldersPresets[i];
+                if (!instanceFoldersPreset.IsValid)
+                    Instance.foldersPresets.RemoveAt(i);
+            }
+        }
+
         public bool HasAnyPresetForFolder(string relativeFolderPath)
         {
             return TryGetPresetsForFolder(relativeFolderPath, out PresetData[] presets);
@@ -198,7 +209,5 @@ namespace BrunoMikoski.PresetManager
 
             EditorUtility.SetDirty(this);
         }
-
-        
     }
 }
