@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.2.4] - 2020-04-27
+### Changed
+- Fixed issue where custom folder editor would check folders outside `Assets/`
+
 ## [0.2.3] - 2020-04-23
 ### Changed
 - Fixed PresetManager auto creation sometimes causing issues
@@ -41,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial Versioning
 
+[0.2.4]: https://github.com/badawe/PresetManager/releases/tag/v0.2.4
 [0.2.3]: https://github.com/badawe/PresetManager/releases/tag/v0.2.3
 [0.2.2]: https://github.com/badawe/PresetManager/releases/tag/v0.2.2
 [0.2.1]: https://github.com/badawe/PresetManager/releases/tag/v0.2.1
