@@ -24,6 +24,9 @@ namespace BrunoMikoski.PresetManager
                 return;
             
             relativeFolderPath = AssetDatabase.GetAssetPath(target);
+            if(!relativeFolderPath.StartsWith("Assets"))
+                return;
+            
             absoluteFolderPath = PresetManagerUtils.RelativeToAbsolutePath(relativeFolderPath);
             isFolder = Directory.Exists(absoluteFolderPath);
 
