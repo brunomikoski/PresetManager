@@ -163,7 +163,23 @@ namespace BrunoMikoski.PresetManager
                 EditorUtility.SetDirty(assetImporter);
             }
         }
-
+        
+        [MenuItem("Assets/Apply Presets")]
+        public static void ApplyPresetsToSelectFolder()
+        {
+            var folderPath = AssetDatabase.GetAssetPath(Selection.activeInstanceID);
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                var getActiveFolderPath = typeof(ProjectWindowUtil).GetMethod(
+                    "GetActiveFolderPath",
+                    BindingFlags.Static | BindingFlags.NonPublic);
+                if (getActiveFolderPath != null)
+                    folderPath = (string)getActiveFolderPath.Invoke(null, null);
+            }
+            if(!AssetDatabase.IsValidFolder(folderPath)) return;
+            ApplyPresetsToFolder(folderPath);
+        }
+        
         public static void ApplyPresetsToFolder(string relativeFolderPath)
         {
             projectPresets = null;
